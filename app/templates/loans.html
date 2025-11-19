@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Prêts - Gestion Bibliothèque{% endblock %}
+
+{% block content %}
+<h1>Gestion des Prêts</h1>
+
+<button class="btn" onclick="openAddModal()">+ Ajouter un prêt</button>
+
+<table id="loansTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Livre ID</th>
+            <th>Utilisateur ID</th>
+            <th>Date d'emprunt</th>
+            <th>Date de retour prévue</th>
+            <th>Retourné</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<!-- Modal Ajouter/Modifier -->
+<div id="loanModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle">Ajouter un prêt</h2>
+        <form id="loanForm">
+            <input type="hidden" id="loanId">
+            <div class="form-group">
+                <label>Livre ID:</label>
+                <input type="number" id="book_id" required>
+            </div>
+            <div class="form-group">
+                <label>Utilisateur ID:</label>
+                <input type="number" id="user_id" required>
+            </div>
+            <div class="form-group">
+                <label>Date de retour prévue:</label>
+                <input type="date" id="due_date">
+            </div>
+            <div class="form-group" id="returnedGroup" style="display:none;">
+                <label>Retourné:</label>
+                <select id="returned">
+                    <option value="false">Non</option>
+                    <option value="true">Oui</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Enregistrer</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Charger les prêts au démarrage
+    loadLoans();
+
+    async function loadLoans() {
+        const response = await fetch('/loans/');
+        const loans = await response.json();
+        const tbody = document.querySelector('#loansTable tbody');
+        tbody.innerHTML = loans.map(loan => `
+            <tr>
+                <td>${loan.id}</td>
+                <td>${loan.book_id}</td>
+                <td>${loan.user_id}</td>
+                <td>${loan.date_loaned ? new Date(loan.date_loaned).toLocaleDateString() : '-'}</td>
+                <td>${loan.due_date ? new Date(loan.due_date).toLocaleDateString() : '-'}</td>
+                <td>${loan.returned ? 'Oui' : 'Non'}</td>
+                <td>
+                    <button class="btn" onclick="editLoan(${loan.id})">Modifier</button>
+                    <button class="btn btn-danger" onclick="deleteLoan(${loan.id})">Supprimer</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openAddModal() {
+        document.getElementById('modalTitle').textContent = 'Ajouter un prêt';
+        document.getElementById('loanForm').reset();
+        document.getElementById('loanId').value = '';
+        document.getElementById('returnedGroup').style.display = 'none';
+        document.getElementById('loanModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('loanModal').style.display = 'none';
+    }
+
+    async function editLoan(id) {
+        const response = await fetch('/loans/');
+        const loans = await response.json();
+        const loan = loans.find(l => l.id === id);
+        
+        document.getElementById('modalTitle').textContent = 'Modifier le prêt';
+        document.getElementById('loanId').value = loan.id;
+        document.getElementById('book_id').value = loan.book_id;
+        document.getElementById('book_id').disabled = true;
+        document.getElementById('user_id').value = loan.user_id;
+        document.getElementById('user_id').disabled = true;
+        
+        if (loan.due_date) {
+            const date = new Date(loan.due_date);
+            document.getElementById('due_date').value = date.toISOString().split('T')[0];
+        }
+        
+        document.getElementById('returnedGroup').style.display = 'block';
+        document.getElementById('returned').value = loan.returned.toString();
+        document.getElementById('loanModal').style.display = 'block';
+    }
+
+    async function deleteLoan(id) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer ce prêt ?')) return;
+        
+        const response = await fetch(`/loans/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        alert(result.message);
+        loadLoans();
+    }
+
+    document.getElementById('loanForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById('loanId').value;
+        const data = {
+            book_id: parseInt(document.getElementById('book_id').value),
+            user_id: parseInt(document.getElementById('user_id').value),
+            due_date: document.getElementById('due_date').value || null
+        };
+
+        if (id) {
+            data.returned = document.getElementById('returned').value === 'true';
+        }
+
+        const url = id ? `/loans/${id}` : '/loans/';
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(result.message);
+            closeModal();
+            loadLoans();
+            // Réactiver les champs
+            document.getElementById('book_id').disabled = false;
+            document.getElementById('user_id').disabled = false;
+        } else {
+            alert('Erreur: ' + result.error);
+        }
+    });
+
+    // Fermer le modal en cliquant à l'extérieur
+    window.onclick = function(event) {
+        const modal = document.getElementById('loanModal');
+        if (event.target == modal) {
+            closeModal();
+            document.getElementById('book_id').disabled = false;
+            document.getElementById('user_id').disabled = false;
+        }
+    }
+</script>
+{% endblock %}

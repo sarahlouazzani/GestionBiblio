@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Livres - Gestion Bibliothèque{% endblock %}
+
+{% block content %}
+<h1>Gestion des Livres</h1>
+
+<button class="btn" onclick="openAddModal()">+ Ajouter un livre</button>
+
+<table id="booksTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Auteur</th>
+            <th>ISBN</th>
+            <th>Stock</th>
+            <th>Disponible</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<!-- Modal Ajouter/Modifier -->
+<div id="bookModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle">Ajouter un livre</h2>
+        <form id="bookForm">
+            <input type="hidden" id="bookId">
+            <div class="form-group">
+                <label>Titre:</label>
+                <input type="text" id="title" required>
+            </div>
+            <div class="form-group">
+                <label>Auteur:</label>
+                <input type="text" id="author" required>
+            </div>
+            <div class="form-group">
+                <label>ISBN:</label>
+                <input type="text" id="isbn">
+            </div>
+            <div class="form-group">
+                <label>Stock:</label>
+                <input type="number" id="stock" value="1">
+            </div>
+            <div class="form-group">
+                <label>Disponible:</label>
+                <select id="available">
+                    <option value="true">Oui</option>
+                    <option value="false">Non</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Enregistrer</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Charger les livres au démarrage
+    loadBooks();
+
+    async function loadBooks() {
+        const response = await fetch('/books/');
+        const books = await response.json();
+        const tbody = document.querySelector('#booksTable tbody');
+        tbody.innerHTML = books.map(book => `
+            <tr>
+                <td>${book.id}</td>
+                <td>${book.title}</td>
+                <td>${book.author}</td>
+                <td>${book.isbn || '-'}</td>
+                <td>${book.stock}</td>
+                <td>${book.available ? 'Oui' : 'Non'}</td>
+                <td>
+                    <button class="btn" onclick="editBook(${book.id})">Modifier</button>
+                    <button class="btn btn-danger" onclick="deleteBook(${book.id})">Supprimer</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openAddModal() {
+        document.getElementById('modalTitle').textContent = 'Ajouter un livre';
+        document.getElementById('bookForm').reset();
+        document.getElementById('bookId').value = '';
+        document.getElementById('bookModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('bookModal').style.display = 'none';
+    }
+
+    async function editBook(id) {
+        const response = await fetch('/books/');
+        const books = await response.json();
+        const book = books.find(b => b.id === id);
+        
+        document.getElementById('modalTitle').textContent = 'Modifier le livre';
+        document.getElementById('bookId').value = book.id;
+        document.getElementById('title').value = book.title;
+        document.getElementById('author').value = book.author;
+        document.getElementById('isbn').value = book.isbn || '';
+        document.getElementById('stock').value = book.stock;
+        document.getElementById('available').value = book.available.toString();
+        document.getElementById('bookModal').style.display = 'block';
+    }
+
+    async function deleteBook(id) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer ce livre ?')) return;
+        
+        const response = await fetch(`/books/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        alert(result.message);
+        loadBooks();
+    }
+
+    document.getElementById('bookForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById('bookId').value;
+        const data = {
+            title: document.getElementById('title').value,
+            author: document.getElementById('author').value,
+            isbn: document.getElementById('isbn').value,
+            stock: parseInt(document.getElementById('stock').value),
+            available: document.getElementById('available').value === 'true'
+        };
+
+        const url = id ? `/books/${id}` : '/books/';
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        alert(result.message);
+        closeModal();
+        loadBooks();
+    });
+
+    // Fermer le modal en cliquant à l'extérieur
+    window.onclick = function(event) {
+        const modal = document.getElementById('bookModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}

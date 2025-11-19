@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil - Gestion Bibliothèque{% endblock %}
+
+{% block content %}
+<h1>Bienvenue dans le Système de Gestion de Bibliothèque</h1>
+
+<div style="margin-top: 2rem;">
+    <h2>Menu Principal</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div style="padding: 1.5rem; background-color: #4CAF50; color: white; border-radius: 8px; text-align: center;">
+            <h3>Livres</h3>
+            <p style="margin: 1rem 0;">Gérer le catalogue de livres</p>
+            <a href="/books/page" style="color: white; text-decoration: underline;">Accéder →</a>
+        </div>
+        
+        <div style="padding: 1.5rem; background-color: #2196F3; color: white; border-radius: 8px; text-align: center;">
+            <h3>Utilisateurs</h3>
+            <p style="margin: 1rem 0;">Gérer les membres</p>
+            <a href="/users/page" style="color: white; text-decoration: underline;">Accéder →</a>
+        </div>
+        
+        <div style="padding: 1.5rem; background-color: #FF9800; color: white; border-radius: 8px; text-align: center;">
+            <h3>Prêts</h3>
+            <p style="margin: 1rem 0;">Gérer les emprunts</p>
+            <a href="/loans/page" style="color: white; text-decoration: underline;">Accéder →</a>
+        </div>
+        
+        <div style="padding: 1.5rem; background-color: #9C27B0; color: white; border-radius: 8px; text-align: center;">
+            <h3>Réservations</h3>
+            <p style="margin: 1rem 0;">Gérer les réservations</p>
+            <a href="/reservations/page" style="color: white; text-decoration: underline;">Accéder →</a>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 3rem; padding: 1rem; background-color: #f9f9f9; border-left: 4px solid #4CAF50;">
+    <h3>À propos du système</h3>
+    <p>Ce système permet de gérer efficacement une bibliothèque avec les fonctionnalités suivantes :</p>
+    <ul style="margin-top: 0.5rem; margin-left: 2rem;">
+        <li>Gestion du catalogue de livres</li>
+        <li>Gestion des membres</li>
+        <li>Suivi des prêts et retours</li>
+        <li>Système de réservation</li>
+    </ul>
+</div>
+{% endblock %}
