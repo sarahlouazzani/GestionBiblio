@@ -2,7 +2,7 @@
 
 Application web complète pour la gestion d'une bibliothèque, développée avec Flask et PostgreSQL.
 
-![Page d'accueil](img/2png)
+![Page d'accueil](img/2.png)
 
 ## 🎯 Fonctionnalités
 
@@ -12,7 +12,7 @@ Application web complète pour la gestion d'une bibliothèque, développée avec
 - Voir la disponibilité en temps réel
 - Marquer les livres comme disponibles ou empruntés
 
-![Gestion des livres](img/4png)
+![Gestion des livres](img/4.png)
 
 ### Gestion des Utilisateurs
 - Création de comptes utilisateurs (membres et administrateurs)
@@ -20,7 +20,7 @@ Application web complète pour la gestion d'une bibliothèque, développée avec
 - Profils utilisateurs avec historique d'emprunts
 - Gestion des rôles (admin/membre)
 
-![Gestion des utilisateurs](img/5png)
+![Gestion des utilisateurs](img/5.png)
 
 ### Système d'Emprunts
 - Emprunter des livres avec date d'échéance
