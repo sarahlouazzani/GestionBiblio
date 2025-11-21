@@ -38,14 +38,14 @@ def register():
         return jsonify({"error": "Cet email est déjà utilisé"}), 400
     
     try:
-        with db.session.begin():
-            new_user = User(
-                name=data["name"],
-                email=data["email"],
-                role=data.get("role", "member")
-            )
-            new_user.set_password(data["password"])
-            db.session.add(new_user)
+        new_user = User(
+            name=data["name"],
+            email=data["email"],
+            role=data.get("role", "member")
+        )
+        new_user.set_password(data["password"])
+        db.session.add(new_user)
+        db.session.commit()
         return jsonify({"message": "Inscription réussie", "user_id": new_user.id}), 201
     except Exception as e:
         db.session.rollback()
@@ -60,13 +60,13 @@ def get_users():
 def add_user():
     data = request.json
     try:
-        with db.session.begin():
-            new_user = User(
-                name=data["name"],
-                email=data["email"],
-                role=data.get("role","member")
-            )
-            db.session.add(new_user)
+        new_user = User(
+            name=data["name"],
+            email=data["email"],
+            role=data.get("role","member")
+        )
+        db.session.add(new_user)
+        db.session.commit()
         return jsonify({"message": "Utilisateur ajouté", "user_id": new_user.id}), 201
     except Exception as e:
         db.session.rollback()
@@ -76,11 +76,11 @@ def add_user():
 def update_user(user_id):
     data = request.json
     try:
-        with db.session.begin():
-            user = User.query.get_or_404(user_id)
-            user.name = data.get("name", user.name)
-            user.email = data.get("email", user.email)
-            user.role = data.get("role", user.role)
+        user = User.query.get_or_404(user_id)
+        user.name = data.get("name", user.name)
+        user.email = data.get("email", user.email)
+        user.role = data.get("role", user.role)
+        db.session.commit()
         return jsonify({"message": "Utilisateur mis à jour"})
     except Exception as e:
         db.session.rollback()
@@ -89,9 +89,9 @@ def update_user(user_id):
 @users_bp.route("/<int:user_id>", methods=["DELETE"])
 def delete_user(user_id):
     try:
-        with db.session.begin():
-            user = User.query.get_or_404(user_id)
-            db.session.delete(user)
+        user = User.query.get_or_404(user_id)
+        db.session.delete(user)
+        db.session.commit()
         return jsonify({"message": "Utilisateur supprimé"})
     except Exception as e:
         db.session.rollback()
